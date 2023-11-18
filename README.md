@@ -24,7 +24,7 @@ bundle install ok
 ＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝＝
 controller/concerns
 
-jwt_authenication.rb作成
+jwt_authenticator.rb作成<=名前気をつけましょう
 
 module JwtAuthenticator
 require 'jwt'
@@ -82,3 +82,50 @@ end
 "[password":"kang@gmai.com](mailto:password%22:%22kang@gmai.com)",
 "[password_confirmation":"kang@gmai.com](mailto:password_confirmation%22:%22kang@gmai.com)"}
 }
+login 確認ok
+
+===========P
+postテーブル作成
+rails g model post title:string body:string user_id:integer
+rails db:migrate
+
+rails g controller api/v1/posts
+
+
+=======
+      def create
+     jwt_authenticate
+    
+      if @current_user.nil?
+        render json: { status: 401, error: "Unauthorized" }
+        return
+      end
+    
+      token = encode(@current_user.id) # 正しいuser_idを使用する
+      if post=@current_user.posts.build(post_params)
+          p"=================="
+          p params
+          p"==================="
+         render json:{status: 201,data: post,token: token}
+      else
+          render json:{status: 400,error: "posts not update"}
+      end
+    end
+    private
+    def post_params
+        parmas.require(:post).permit(:title,:body ,:user_id)
+    end
+    ==============
+    routes
+    Rails.application.routes.draw do
+  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+  namespace :api do 
+       namespace  :v1 do
+       resources :users do
+        resources :posts 
+        end
+      end
+  end
+end
+
+    
